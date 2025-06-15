@@ -3,7 +3,7 @@ package test;
 import javax.swing.*;
 
 import data_access_object.StaffDAO;
-import view.ManagementSystem;
+import views.ManagementSystem;
 
 import java.awt.*;
 import java.awt.event.MouseAdapter;

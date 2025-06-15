@@ -9,7 +9,7 @@ import java.util.HashMap;
 import javax.swing.JOptionPane;
 
 import database.JDBCUtil;
-import model.Cargo;
+import models.Cargo;
 
 public class CargoDAO {
 	

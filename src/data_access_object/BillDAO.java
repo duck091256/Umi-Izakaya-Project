@@ -7,6 +7,7 @@ import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
 import java.sql.SQLException;
+import java.sql.Statement;
 import java.sql.Timestamp;
 import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
@@ -20,9 +21,9 @@ import java.util.function.Predicate;
 import javax.swing.JOptionPane;
 
 import database.JDBCUtil;
-import model.Bill;
-import model.DetailReceipt;
-import model.Dish;
+import models.Bill;
+import models.DetailReceipt;
+import models.Dish;
 
 public class BillDAO {
 	private static BillDAO instance;
@@ -180,6 +181,24 @@ public class BillDAO {
         return null;
     }
     
+    public static ArrayList<Bill> loadBillWasPaied() {
+        String sql = "SELECT * FROM bill WHERE wasPay = 1";
+        try (Connection conn = JDBCUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(sql);
+             ResultSet rs = stmt.executeQuery()) {
+
+            ArrayList<Bill> ans = new ArrayList<>();
+            while(rs.next()) {
+                ans.add(new Bill(rs.getString(1), rs.getInt(2), rs.getDate(3), rs.getDouble(4)));
+            }
+            return ans;
+        } catch(Exception e) {
+            e.printStackTrace();
+        }
+        return null;
+    }
+    
+    
     public static void printReceiptToFile(String billID) {
         try (BufferedWriter writer = new BufferedWriter(new FileWriter("DetailReceipt.txt"))) {
             DetailReceiptDAO detailDAO = new DetailReceiptDAO();
@@ -239,5 +258,30 @@ public class BillDAO {
         } catch (IOException e) {
             System.err.println("Lỗi khi mở file: " + e.getMessage());
         }
+    }
+
+    public static int createEmptyBill() {
+        int billID = -1;
+        try (Connection conn = JDBCUtil.getConnection()) {
+            String sql = "INSERT INTO BILL (wasPay, time, payment) VALUES (?, ?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+
+            String formattedTime = getBillTime(LocalDateTime.now());  // định dạng thời gian theo yêu cầu
+            stmt.setBoolean(1, false);
+            stmt.setString(2, formattedTime);  // dùng chuỗi thời gian định dạng
+            stmt.setDouble(3, 0.0);
+
+            stmt.executeUpdate();
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) billID = rs.getInt(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return billID;
+    }
+    
+    public static String getBillTime(LocalDateTime time) {
+        DateTimeFormatter formatter = DateTimeFormatter.ofPattern("dd_MM_yyyy_HH:mm:ss");
+        return time.format(formatter);
     }
 }

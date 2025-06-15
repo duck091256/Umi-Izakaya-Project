@@ -1,6 +1,5 @@
 package data_access_object;
 
-import model.DetailReceipt;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
@@ -10,6 +9,7 @@ import java.util.Arrays;
 import java.util.List;
 
 import database.JDBCUtil;
+import models.DetailReceipt;
 
 public class DetailReceiptDAO {
 	public static ArrayList<DetailReceipt> list = new ArrayList<>();
@@ -83,6 +83,19 @@ public class DetailReceiptDAO {
 	        System.out.println("Lỗi khi lưu detail_receipt: " + e.getMessage());
 	        e.printStackTrace();
 	        return false;
+	    }
+	}
+	
+	public static void addDishToBill(int billID, String dishID, int quantity) {
+	    try (Connection conn = JDBCUtil.getConnection()) {
+	        String sql = "INSERT INTO DETAIL_RECEIPT (dishID, billID, dishQuantity) VALUES (?, ?, ?)";
+	        PreparedStatement stmt = conn.prepareStatement(sql);
+	        stmt.setString(1, dishID);
+	        stmt.setInt(2, billID);
+	        stmt.setInt(3, quantity);
+	        stmt.executeUpdate();
+	    } catch (SQLException e) {
+	        e.printStackTrace();
 	    }
 	}
 }

@@ -3,7 +3,7 @@ package data_access_object;
 import java.sql.*;
 import java.util.ArrayList;
 import database.JDBCUtil;
-import model.Session;
+import models.Session;
 
 public class SessionDAO {
     private static SessionDAO instance;
@@ -61,7 +61,7 @@ public class SessionDAO {
     }
 
     // Lấy tất cả session
-    public ArrayList<Session> getAllSessions() {
+    public static ArrayList<Session> getAllSessions() {
         ArrayList<Session> list = new ArrayList<>();
         String sql = "SELECT * FROM sessions";
 
@@ -136,5 +136,22 @@ public class SessionDAO {
         }
 
         return null;
+    }
+    
+    public static int createSession(String staffID, String tableID, int billID) {
+        int sessionID = -1;
+        try (Connection conn = JDBCUtil.getConnection()) {
+            String sql = "INSERT INTO Session (staffID, tableID, billID) VALUES (?, ?, ?)";
+            PreparedStatement stmt = conn.prepareStatement(sql, Statement.RETURN_GENERATED_KEYS);
+            stmt.setString(1, staffID);
+            stmt.setString(2, tableID);
+            stmt.setInt(3, billID);
+            stmt.executeUpdate();
+            ResultSet rs = stmt.getGeneratedKeys();
+            if (rs.next()) sessionID = rs.getInt(1);
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return sessionID;
     }
 }

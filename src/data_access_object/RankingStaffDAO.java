@@ -1,8 +1,8 @@
 package data_access_object;
 
 import database.JDBCUtil;
-import model.RankingStaff;
-import model.SimpleRanking;
+import models.RankingStaff;
+import models.SimpleRanking;
 
 import java.sql.Connection;
 import java.sql.PreparedStatement;

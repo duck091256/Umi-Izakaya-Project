@@ -14,10 +14,10 @@ import java.util.function.Predicate;
 import javax.swing.JOptionPane;
 
 import database.JDBCUtil;
-import model.Dish;
-import model.Staff;
-import model.Table;
-import service.Ordering;
+import models.Dish;
+import models.Staff;
+import models.Table;
+import services.Ordering;
 
 public class TableDAO {
 	
@@ -82,6 +82,7 @@ public class TableDAO {
                         String dishCategory = orderRs.getString("dishCategory");
                         String dishImage = orderRs.getString("dishImage");
                         
+//                        System.out.println("TableID: " + tableID + " - DishID: " + dishID + " - Quantity: " + dishQuantity);
                         Dish dish = new Dish(dishID, dishName, dishPrice, dishCategory, dishImage, dishQuantity);
                         
                         ArrayList<Dish> dishes = tempOrderList.computeIfAbsent(tableID, k -> new ArrayList<>());
@@ -129,6 +130,12 @@ public class TableDAO {
                    .orElse(null);
     }
 
+    public static String getStaffResponsible(String tableID) {
+        return Optional.ofNullable(getTable(tableID))
+                       .map(Table::getResponsibleBy)
+                       .orElse("");
+    }
+    
     /**
      * Kiểm tra xem bàn có session đang hoạt động không
      */

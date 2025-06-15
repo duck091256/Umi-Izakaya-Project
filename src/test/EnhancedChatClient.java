@@ -13,11 +13,12 @@ import javax.swing.text.BadLocationException;
 import javax.swing.text.Style;
 import javax.swing.text.StyleConstants;
 import javax.swing.text.StyledDocument;
-import javax.sound.sampled.*;
 
-import service.ClickableFileListener;
-import service.CryptoUtils;
-import service.ImageSteganographyUtils;
+import services.ClickableFileListener;
+import services.CryptoUtils;
+import services.ImageSteganographyUtils;
+
+import javax.sound.sampled.*;
 
 import java.awt.*;
 import java.awt.event.*;

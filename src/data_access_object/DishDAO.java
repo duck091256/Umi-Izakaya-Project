@@ -12,8 +12,8 @@ import java.util.function.Predicate;
 import javax.swing.JOptionPane;
 
 import database.JDBCUtil;
-import model.Dish;
-import model.Table;
+import models.Dish;
+import models.Table;
 
 public class DishDAO {
 	

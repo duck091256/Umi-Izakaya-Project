@@ -6,8 +6,8 @@ import java.util.*;
 
 import javax.swing.JOptionPane;
 import database.JDBCUtil;
-import model.*;
-import util.*;
+import models.*;
+import utils.*;
 
 public class StaffDAO {
 	
@@ -318,4 +318,42 @@ public class StaffDAO {
 
 	    return names;
 	}
+	
+	// Thêm phương thức để lấy staffID dựa trên username
+    public static String getStaffIDByUsername(String username) {
+        String sql = "SELECT staffID FROM staff WHERE username = ?";
+        try (Connection conn = JDBCUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+        	ps.setString(1, username);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getString("staffID");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+        return null; // Trả về null nếu không tìm thấy
+    }
+    
+    
+    public static double getBaseSalaryData(String staffID) {
+        try (Connection conn = JDBCUtil.getConnection()) {
+            String sql = "SELECT baseSalary FROM SALARY_RECORDS WHERE staffID = ?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            
+            ps.setString(1, staffID);
+            ResultSet rs = ps.executeQuery();
+            
+            if (rs.next()) {
+                return rs.getDouble("baseSalary");
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        
+        return -1;
+    }
 }

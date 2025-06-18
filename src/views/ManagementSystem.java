@@ -137,7 +137,7 @@ public class ManagementSystem extends JFrame {
     private Boolean checkFloor1 = false, checkFloor2 = true;
     private JScrollPane table_mode_show_table, table_mode_show_table_for_menu;
     private JPanel menu, floor1, floor2;
-    private RoundedLabel lbl_switch_grip_for_menu, lbl_switch_table_for_menu, lbl_switch_table, lbl_switch_grip, lbl_manual_calculate, lbl_view_salary_table, lbl_back;
+    private RoundedLabel lbl_switch_grip_for_menu, lbl_switch_table_for_menu, lbl_switch_table, lbl_switch_grip, lbl_manual_calculate, lbl_view_salary_table, lbl_back,lbl_update_salary;
     private Boolean overallCheckStatus = false, dishCheckStatus = true, tableCheckStatus = true, billCheckStatus = true, employeeCheckStatus = true;
     private JLabel lbl_overall, lbl_dish, lbl_table, lbl_bill, lbl_employee;
     private CardLayout cardLayout, switch_CardLayout_for_menu, switch_CardLayout;
@@ -3413,7 +3413,6 @@ public class ManagementSystem extends JFrame {
  	    JTextField tfResponsible = new JTextField(currentResponsible);
  	    JButton btnSelectEmployee = new JButton("Chọn");
  	    btnSelectEmployee.addActionListener(e -> {
- 	        List<Staff> employees = StaffDAO.list;
  	        final int siz = StaffDAO.list.size();
  	        String[] employeeNames = new String[siz];
  	        for (int i = 0; i < siz; i++) {
@@ -3425,7 +3424,7 @@ public class ManagementSystem extends JFrame {
  	        if (selectedEmployee != null) tfResponsible.setText(selectedEmployee);
  	    });
 
- 	    JPanel panel = new JPanel(new GridLayout(6, 2, 10, 10));
+ 	    JPanel panel = new JPanel(new GridLayout(6, 2, 10, 30));
  	    panel.add(new JLabel("Số Bàn:"));
  	    panel.add(tfTableNum);
  	    panel.add(new JLabel("Tầng Hoạt Động:"));
@@ -3462,11 +3461,21 @@ public class ManagementSystem extends JFrame {
  	}
  	
  	private String getDisplayStaffID(String label) {
- 		return label.substring(label.indexOf('-') + 2);
+ 	    if (label == null || !label.contains("-")) return null;
+
+ 	    int idx = label.indexOf('-');
+ 	    if (idx + 2 >= label.length()) return null;
+
+ 	    return label.substring(idx + 2).trim(); // Lấy phần ID sau dấu -
  	}
  	
  	private String getDisplayStaffName(String label) {
- 		return label.substring(0, label.indexOf('-') - 1);
+ 	    if (label == null || !label.contains("-")) return label;
+
+ 	    int idx = label.indexOf('-');
+ 	    if (idx <= 1) return label;
+
+ 	    return label.substring(0, idx - 1).trim(); // Lấy phần tên trước dấu -
  	}
  	
     // Làm màu
@@ -4079,8 +4088,7 @@ public class ManagementSystem extends JFrame {
         
         staffPanel.add(panel_contain_switch_CardLayout_for_staff);
 		
-		lbl_view_salary_table = new RoundedLabel("Xem chi tiết bảng lương");
-		lbl_view_salary_table.setText("Chi tiết bảng lương");
+		lbl_view_salary_table = new RoundedLabel("Chi tiết bảng lương");
 		lbl_view_salary_table.setHorizontalAlignment(SwingConstants.CENTER);
 		lbl_view_salary_table.setForeground(Color.BLACK);
 		lbl_view_salary_table.setFont(new Font("Arial", Font.PLAIN, 14));
@@ -4106,6 +4114,7 @@ public class ManagementSystem extends JFrame {
     		public void mouseClicked(MouseEvent e) {
     			switch_CardLayout_for_staff.show(panel_contain_switch_CardLayout_for_staff, "SalaryTable");
     			lbl_back.setVisible(true);
+    			lbl_update_salary.setVisible(true);
     			lbl_manual_calculate.setVisible(true);
     			lbl_view_salary_table.setVisible(false);
        		}
@@ -4166,8 +4175,7 @@ public class ManagementSystem extends JFrame {
     			lbl_manual_calculate.setBackground(new Color(169, 169, 169));
     		}
 		});
-        
-        
+                
         lbl_back = new RoundedLabel("< Trở lại");
         lbl_back.setHorizontalAlignment(SwingConstants.CENTER);
         lbl_back.setForeground(Color.BLACK);
@@ -4196,6 +4204,7 @@ public class ManagementSystem extends JFrame {
                 switch_CardLayout_for_staff.show(panel_contain_switch_CardLayout_for_staff, "StaffTable");
                 lbl_back.setVisible(false);
                 lbl_manual_calculate.setVisible(false);
+                lbl_update_salary.setVisible(false);
                 lbl_view_salary_table.setVisible(true);
             }
 
@@ -4210,8 +4219,49 @@ public class ManagementSystem extends JFrame {
                 lbl_back.setForeground(Color.WHITE);
                 lbl_back.setBackground(new Color(169, 169, 169));
             }
-        });
+        });        
         
+        lbl_update_salary = new RoundedLabel("Cập nhật thông tin");
+        lbl_update_salary.setHorizontalAlignment(SwingConstants.CENTER);
+        lbl_update_salary.setForeground(Color.BLACK);
+        lbl_update_salary.setFont(new Font("Arial", Font.PLAIN, 14));
+        lbl_update_salary.setCornerRadius(10);
+        lbl_update_salary.setBackground(new Color(211, 211, 211));
+        lbl_update_salary.setBounds(911, 185, 149, 32);
+        staffPanel.add(lbl_update_salary);
+        lbl_update_salary.setVisible(false);
+        
+        lbl_update_salary.addMouseListener(new MouseAdapter() {
+    		@Override
+    		public void mouseEntered(MouseEvent e) {
+    			lbl_update_salary.setForeground(Color.WHITE);
+    			lbl_update_salary.setBackground(new Color(169, 169, 169));
+    		}
+    		
+    		@Override
+    		public void mouseExited(MouseEvent e) {
+    			lbl_update_salary.setForeground(Color.BLACK);
+    			lbl_update_salary.setBackground(new Color(211, 211, 211));
+    		}
+    		
+    		@Override
+    		public void mouseClicked(MouseEvent e) {
+    			updateBaseSalary();
+       		}
+    		
+    		@Override
+    		public void mousePressed(MouseEvent e) {
+    			lbl_update_salary.setForeground(Color.WHITE);
+    			lbl_update_salary.setBackground(new Color(105, 105, 105));
+    		}
+    		
+    		@Override
+    		public void mouseReleased(MouseEvent e) {
+    			lbl_update_salary.setForeground(Color.WHITE);
+    			lbl_update_salary.setBackground(new Color(169, 169, 169));
+    		}
+		});
+                
     	return staffPanel;
     }
     
@@ -4306,6 +4356,46 @@ public class ManagementSystem extends JFrame {
     	return scrollpane_show_table;
     }
     
+    private void updateBaseSalary() {
+        int selectedRow = SalaryTable.getSelectedRow();
+        if (selectedRow == -1) {
+            JOptionPane.showMessageDialog(null, "Vui lòng chọn một dòng để cập nhật lương!", "Thông báo", JOptionPane.WARNING_MESSAGE);
+            return;
+        }
+
+        String staffID = Salary_table_model.getValueAt(selectedRow, 0).toString();
+        String currentSalaryStr = Salary_table_model.getValueAt(selectedRow, 2).toString().replace(",", "");
+        double currentSalary = Double.parseDouble(currentSalaryStr);
+
+        String input = JOptionPane.showInputDialog(null,
+            "Nhập mức lương cơ bản mới cho nhân viên " + staffID + ":",
+            String.format("%.0f", currentSalary));
+
+        if (input == null || input.trim().isEmpty()) return;
+
+        try {
+            double newSalary = Double.parseDouble(input.replace(",", ""));
+            if (newSalary < 0) throw new NumberFormatException();
+
+            if (StaffDAO.updateBaseSalaryData(staffID, newSalary)) {
+                Salary_table_model.setValueAt(String.format("%,.0f", newSalary), selectedRow, 2);
+
+                double bonus = Double.parseDouble(Salary_table_model.getValueAt(selectedRow, 3).toString().replace(",", ""));
+                double total = newSalary + bonus;
+                Salary_table_model.setValueAt(String.format("%,.0f", total), selectedRow, 4);
+                
+                StaffDAO.updateTotalSalaryData(staffID, total);
+                
+                JOptionPane.showMessageDialog(null, "Cập nhật lương thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+            } else {
+                JOptionPane.showMessageDialog(null, "Cập nhật lương thất bại!", "Thông báo", JOptionPane.ERROR_MESSAGE);
+            }
+
+        } catch (NumberFormatException ex) {
+            JOptionPane.showMessageDialog(null, "Lương không hợp lệ! Vui lòng nhập số.", "Lỗi", JOptionPane.ERROR_MESSAGE);
+        }
+    }
+
     // Hàm tải dữ liệu từ bảng SALARY_RECORDS
     private void loadSalaryData() {
         Salary_table_model.setRowCount(0); // clear bảng

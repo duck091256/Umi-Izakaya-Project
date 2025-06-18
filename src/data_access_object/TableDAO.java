@@ -3,6 +3,7 @@ package data_access_object;
 import java.sql.Connection;
 import java.sql.PreparedStatement;
 import java.sql.ResultSet;
+import java.sql.SQLException;
 import java.sql.Statement;
 import java.util.ArrayList;
 import java.util.HashMap;
@@ -188,13 +189,12 @@ public class TableDAO {
 	 * @return true - nếu cập nhật thành công, false - nếu thất bại.
 	 */
 	public static boolean updateTable(Table oldTable, Table newTable) {
-	    String oldID = oldTable.getTableID();
-	    String newID = newTable.getTableID();
+	    String id = oldTable.getTableID(); // Giữ nguyên ID, không cho đổi
 
 	    // Tìm bàn cũ trong danh sách
 	    Table existingTable = null;
 	    for (Table table : list) {
-	        if (table.getTableID().equals(oldID)) {
+	        if (table.getTableID().equals(id)) {
 	            existingTable = table;
 	            break;
 	        }
@@ -206,21 +206,16 @@ public class TableDAO {
 	        return false;
 	    }
 
-	    // Kiểm tra nếu ID mới đã tồn tại trong danh sách (và không phải của bàn hiện tại)
-	    for (Table table : list) {
-	        if (table.getTableID().equals(newID) && !table.equals(existingTable)) {
-	            JOptionPane.showMessageDialog(null, "Cập nhật bàn thất bại, ID mới đã tồn tại!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-	            return false;
-	        }
-	    }
-
-	    // Cập nhật thông tin bàn
+	    // Cập nhật dữ liệu trong database (chỉ update dữ liệu khác, không đổi tableID)
 	    updateTableToDatabase(existingTable, newTable, JDBCUtil.getConnection());
-	    
-	    existingTable.setTableID(newID);
-	    existingTable.setAvailable(newTable.getAvailable());
-	    JOptionPane.showMessageDialog(null, "Cập nhật bàn thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
 
+	    // Cập nhật trong list (vẫn giữ nguyên tableID cũ)
+	    existingTable.setFloorStay(newTable.getFloorStay());
+	    existingTable.setOperatingStatus(newTable.getOperatingStatus());
+	    existingTable.setResponsibleBy(newTable.getResponsibleBy());
+	    existingTable.setAvailable(newTable.getAvailable());
+
+	    JOptionPane.showMessageDialog(null, "Cập nhật bàn thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
 	    return true;
 	}
 	
@@ -406,7 +401,17 @@ public class TableDAO {
 	}
 
 	public static void updateTableToDatabase(Table table, Table newTable, Connection conn) {
-		deleteTableToDatabase(table, conn);
-		addTableToDatabase(newTable, conn);
+	    String sql = "UPDATE dining_table SET floorStay = ?, operatingStatus = ?, responsibleBy = ? WHERE tableID = ?";
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setString(1, newTable.getFloorStay());
+	        ps.setString(2, newTable.getOperatingStatus());
+	        ps.setString(3, newTable.getResponsibleBy());
+	        ps.setString(4, table.getTableID());
+
+	        ps.executeUpdate();
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
 	}
 }

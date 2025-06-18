@@ -69,23 +69,51 @@ public class StaffDAO {
 	 * @return true nếu thành công, false nếu thất bại
 	 */
 	public static boolean addStaff(Staff staff) {
-		
-		if (StaffDAO.map.containsKey(staff.getStaffID())) {
-	        JOptionPane.showMessageDialog(null, "Thêm nhân viên thất bại!", "Thông báo", JOptionPane.ERROR_MESSAGE);
-			return false;
-		}
+	    if (StaffDAO.map.containsKey(staff.getStaffID())) {
+	        JOptionPane.showMessageDialog(null, "Thêm nhân viên thất bại! Mã đã tồn tại!", "Thông báo", JOptionPane.ERROR_MESSAGE);
+	        return false;
+	    }
 
-		try (Connection connection = JDBCUtil.getConnection()) {
-			StaffDAO.list.add(staff);
-			StaffDAO.map.put(staff.getStaffID(), staff);
-			addStaffToDatabase(staff, connection);
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		
-        JOptionPane.showMessageDialog(null, "Đã thêm nhân viên thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
-		return true;
+	    Connection connection = null;
+	    try {
+	        connection = JDBCUtil.getConnection();
+	        connection.setAutoCommit(false); // Bắt đầu transaction
+
+	        // 1. Thêm nhân viên vào bảng STAFF
+	        addStaffToDatabase(staff, connection);
+
+	        // 2. Thêm bản ghi lương vào SALARY_RECORDS với lương mặc định 0.0
+	        String sql = "INSERT INTO SALARY_RECORDS (staffID, baseSalary) VALUES (?, ?)";
+	        try (PreparedStatement ps = connection.prepareStatement(sql)) {
+	            ps.setString(1, staff.getStaffID());
+	            ps.setDouble(2, 0.0); // Lương mặc định, bạn có thể sửa thành staff.getBaseSalary() nếu có
+	            ps.executeUpdate();
+	        }
+
+	        connection.commit(); // Commit nếu cả 2 thành công
+
+	        // Cập nhật danh sách và hiển thị thông báo
+	        StaffDAO.list.add(staff);
+	        StaffDAO.map.put(staff.getStaffID(), staff);
+	        JOptionPane.showMessageDialog(null, "Đã thêm nhân viên thành công!", "Thông báo", JOptionPane.INFORMATION_MESSAGE);
+	        return true;
+
+	    } catch (Exception e) {
+	        e.printStackTrace();
+	        try {
+	            if (connection != null) connection.rollback(); // Rollback nếu lỗi
+	        } catch (SQLException ex) {
+	            ex.printStackTrace();
+	        }
+	        JOptionPane.showMessageDialog(null, "Thêm nhân viên thất bại!", "Lỗi", JOptionPane.ERROR_MESSAGE);
+	        return false;
+	    } finally {
+	        try {
+	            if (connection != null) connection.setAutoCommit(true);
+	        } catch (SQLException e) {
+	            e.printStackTrace();
+	        }
+	    }
 	}
 
 	/**
@@ -110,7 +138,6 @@ public class StaffDAO {
 	 * @return true nếu thành công, false nếu thất bại
 	 */
 	public static boolean updateStaff(Staff staff, Staff newStaff) {
-		
 		/* Nếu không cập nhật ID của Staff **/
 		if (newStaff.getStaffID().equals(staff.getStaffID())) {
 			staff.updateInfo(newStaff);
@@ -276,10 +303,21 @@ public class StaffDAO {
 	}
 	
 	public static void updateStaffToDatabase(Staff staff, Staff newStaff, Connection conn) {
-		deleteStaffToDatabase(staff, conn);
-		addStaffToDatabase(newStaff, conn);
+	    String sql = "UPDATE STAFF SET fullName = ?, sex = ?, phone = ?, position = ? WHERE staffID = ?";
+
+	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
+	        ps.setString(1, newStaff.getFullName());
+	        ps.setString(2, newStaff.getSex());
+	        ps.setString(3, newStaff.getPhone());
+	        ps.setString(4, newStaff.getPosition());
+	        ps.setString(5, staff.getStaffID()); // giữ nguyên staffID
+
+	        ps.executeUpdate();
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	    }
 	}
-	
+
 	public static String getStaffNameFromDatabaseByID(String staffID) {
         String sql = "SELECT * FROM staff WHERE staffID = ?";
 
@@ -335,8 +373,7 @@ public class StaffDAO {
             e.printStackTrace();
         }
         return null; // Trả về null nếu không tìm thấy
-    }
-    
+    }    
     
     public static double getBaseSalaryData(String staffID) {
         try (Connection conn = JDBCUtil.getConnection()) {
@@ -354,6 +391,57 @@ public class StaffDAO {
             e.printStackTrace();
         }
         
-        return -1;
+        return 0.0;
+    }
+    
+    public static boolean insertBaseSalaryData(String staffID, double baseSalary) {
+        String sql = "INSERT INTO SALARY_RECORDS (staffID, baseSalary) VALUES (?, ?)";
+        try (Connection conn = JDBCUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+            
+            ps.setString(1, staffID);
+            ps.setDouble(2, baseSalary);
+
+            int rowsInserted = ps.executeUpdate();
+            return rowsInserted > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
+
+    public static boolean updateBaseSalaryData(String staffID, double newSalary) {
+        String sql = "UPDATE SALARY_RECORDS SET baseSalary = ? WHERE staffID = ?";
+
+        try (Connection conn = JDBCUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setDouble(1, newSalary);
+            ps.setString(2, staffID);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
+    }
+    
+    public static boolean updateTotalSalaryData(String staffID, double total) {
+        String sql = "UPDATE SALARY_RECORDS SET total = ? WHERE staffID = ?";
+
+        try (Connection conn = JDBCUtil.getConnection();
+             PreparedStatement ps = conn.prepareStatement(sql)) {
+
+            ps.setDouble(1, total);
+            ps.setString(2, staffID);
+
+            return ps.executeUpdate() > 0;
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return false;
     }
 }

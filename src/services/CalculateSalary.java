@@ -17,9 +17,8 @@ public class CalculateSalary {
     }
     
     public static void calculateAndSaveSalaryForAllStaff(YearMonth targetMonth) {
-        double baseSalary = 5_000_000;
         String month = targetMonth.toString();
-        
+
         try (Connection conn = JDBCUtil.getConnection()) {
             String checkExist = "SELECT * FROM SALARY_RECORDS WHERE staffID = ? AND month = ?";
             String rankingQuery = "SELECT staffID, totalDishes, rating, ranking FROM RANKING_STAFF";
@@ -30,17 +29,28 @@ public class CalculateSalary {
             PreparedStatement insertStmt = conn.prepareStatement(insertSalary);
             PreparedStatement checkStmt = conn.prepareStatement(checkExist);
 
+            String getLatestBaseSalary = "SELECT baseSalary FROM SALARY_RECORDS WHERE staffID = ? ORDER BY month DESC LIMIT 1";
+            PreparedStatement getSalaryStmt = conn.prepareStatement(getLatestBaseSalary);
+
             while (rs.next()) {
                 String staffID = rs.getString("staffID");
                 int dishes = rs.getInt("totalDishes");
                 double rating = rs.getDouble("rating");
                 int ranking = rs.getInt("ranking");
 
-                // Check nếu đã có lương rồi thì bỏ qua
+                // Kiểm tra nếu bản ghi đã tồn tại trong tháng này
                 checkStmt.setString(1, staffID);
                 checkStmt.setString(2, month);
                 ResultSet checkRs = checkStmt.executeQuery();
                 if (checkRs.next()) continue;
+
+                // Lấy baseSalary mới nhất của nhân viên
+                double baseSalary = 5_000_000; // fallback nếu không có dữ liệu
+                getSalaryStmt.setString(1, staffID);
+                ResultSet salaryRs = getSalaryStmt.executeQuery();
+                if (salaryRs.next()) {
+                    baseSalary = salaryRs.getDouble("baseSalary");
+                }
 
                 double bonus = calculateBonus(dishes, rating, ranking);
                 double total = baseSalary + bonus;

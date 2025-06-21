@@ -32,7 +32,10 @@ public class Payment {
      * @return true - nếu thành công, false - nếu thất bại
      */
     public static boolean payment(Table table) {
-        if (table.getAvailable()) return false;
+        if (table.getAvailable()) {
+        	System.out.println("Lỗi: Trạng thái bàn là \"Sẵn Sàng Phục Vụ\"");
+        	return false;
+        }
 
         String billID = Ordering.getBillIDForTable(table.getTableID());
         if (billID == null) {

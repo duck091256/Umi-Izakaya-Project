@@ -17,6 +17,8 @@ import java.util.ArrayList;
 import java.util.Comparator;
 import java.util.HashMap;
 
+import automation.OvertimeSessionManager;
+
 public class Payment {
 
     /**
@@ -36,7 +38,7 @@ public class Payment {
         	System.out.println("Lỗi: Trạng thái bàn là \"Sẵn Sàng Phục Vụ\"");
         	return false;
         }
-
+        
         String billID = Ordering.getBillIDForTable(table.getTableID());
         if (billID == null) {
             System.out.println("Không tìm thấy billID cho bàn " + table.getTableID());
@@ -92,6 +94,7 @@ public class Payment {
             BillDAO.updateBill(conn, billID, 1, time, totalPrice);
             DetailReceiptDAO.storeOrUpdateDetailReceipt(conn, detailBill);
             SessionDAO.getInstance().deleteSession(conn, table.getTableID());
+            OvertimeSessionManager.removeOvertimeTable(table.getTableID());
             
             conn.commit(); // Hoàn thành giao dịch
             return true;

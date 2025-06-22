@@ -31,7 +31,8 @@ public class Table {
 		return operatingStatus;
 	}
 	public void setOperatingStatus(String operatingStatus) {
-		this.operatingStatus = operatingStatus;
+	    this.operatingStatus = operatingStatus;
+	    this.available = "Sẵn sàng phục vụ".equalsIgnoreCase(operatingStatus);
 	}
 	public String getResponsibleBy() {
 		return responsibleBy;

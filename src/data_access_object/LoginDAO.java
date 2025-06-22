@@ -30,7 +30,6 @@ public class LoginDAO {
 	    }
 	    return null;
 	}
-
     
     public boolean registerUser(String username, String email, String encryptedPassword) {
         try {

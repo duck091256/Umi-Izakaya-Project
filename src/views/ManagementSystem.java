@@ -78,6 +78,7 @@ import javax.swing.event.ListSelectionListener;
 import javax.swing.filechooser.FileNameExtensionFilter;
 import javax.swing.table.DefaultTableCellRenderer;
 import javax.swing.table.DefaultTableModel;
+import javax.swing.table.TableCellRenderer;
 
 import org.jfree.chart.ChartFactory;
 import org.jfree.chart.ChartPanel;
@@ -90,6 +91,7 @@ import org.jfree.chart.renderer.category.BarRenderer;
 import org.jfree.chart.renderer.category.StandardBarPainter;
 import org.jfree.data.category.DefaultCategoryDataset;
 
+import automation.OvertimeSessionManager;
 import data_access_object.BillDAO;
 import data_access_object.DetailReceiptDAO;
 import data_access_object.DishDAO;
@@ -1289,8 +1291,26 @@ public class ManagementSystem extends JFrame {
 		Dish_table_model = new DefaultTableModel(new Object[][] {},
 				new String[] { "Mã Món Ăn", "Tên Món Ăn", "Giá (Nghìn VNĐ)", "Loại Món Ăn" });
 
-		DishTable = new JTable();
-		DishTable.setModel(Dish_table_model);
+		DishTable = new JTable(Dish_table_model) {
+		    @Override
+		    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+		        Component c = super.prepareRenderer(renderer, row, column);
+
+		        // Nếu không đang được chọn, tô màu nền xen kẽ
+		        if (!isRowSelected(row)) {
+		            if (row % 2 == 0) {
+		                c.setBackground(Color.WHITE); // dòng chẵn
+		            } else {
+		                c.setBackground(new Color(240, 240, 240)); // dòng lẻ: xám nhạt
+		            }
+		        } else {
+		            c.setBackground(getSelectionBackground()); // dòng đang chọn
+		        }
+
+		        return c;
+		    }
+		};
+		
 		DishTable.getTableHeader().setReorderingAllowed(false);
 		DishTable.setFont(new Font("Arial", Font.PLAIN, 20));
 		DishTable.getColumnModel().getColumn(0).setPreferredWidth(50);
@@ -2073,6 +2093,14 @@ public class ManagementSystem extends JFrame {
     	                    JOptionPane.YES_NO_OPTION
     	                );
     	                if (confirm == JOptionPane.YES_OPTION) {
+    	                	// Debug
+    	                	ArrayList<Dish> listOrder = Ordering.getOrderingFromTable(table);
+    	                	if (listOrder == null || listOrder.isEmpty()) {
+    	                		System.out.println("List Order bàn này null");
+    	                	} else {
+    	                		table.setAvailable(false);
+    	                	}
+    	                	
     	                    if (Payment.payment(table)) {
     	                    
     	                    Receipt_table_mode.setRowCount(0);
@@ -2279,8 +2307,26 @@ public class ManagementSystem extends JFrame {
 				}
 			);
 		
-    	FloorTable = new JTable();
-    	FloorTable.setModel(Floor_table_model);
+    	FloorTable = new JTable(Floor_table_model) {
+    	    @Override
+    	    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+    	        Component c = super.prepareRenderer(renderer, row, column);
+    	        String tableID = getValueAt(row, 0).toString(); // cột 0 là mã bàn
+
+    	        if (!isRowSelected(row)) {
+    	            if (OvertimeSessionManager.isOvertime(tableID)) {
+    	                c.setBackground(new Color(255, 204, 204)); // Hồng nhạt nếu trễ
+    	            } else {
+    	                c.setBackground(row % 2 == 0 ? Color.WHITE : new Color(240, 240, 240));
+    	            }
+    	        } else {
+    	            c.setBackground(getSelectionBackground());
+    	        }
+
+    	        return c;
+    	    }
+    	};
+    	
     	FloorTable.getTableHeader().setReorderingAllowed(false);
     	FloorTable.setFont(new Font("Arial", Font.PLAIN, 20));
     	FloorTable.getColumnModel().getColumn(0).setPreferredWidth(100);
@@ -2848,8 +2894,10 @@ public class ManagementSystem extends JFrame {
             ArrayList<Dish> updatedOrder = Ordering.getOrderingFromTable(table);
             if (updatedOrder == null || updatedOrder.isEmpty()) {
                 Floor_table_model.setValueAt("Sẵn sàng phục vụ", selectedRow, 2);
+                table.setOperatingStatus("Sẵn sàng phục vụ");
             } else {
                 Floor_table_model.setValueAt("Đang phục vụ", selectedRow, 2);
+                table.setOperatingStatus("Đang phục vụ");
 
                 // Nếu trước đó chưa có nút chuyển món, thì add vào
                 if (!Arrays.asList(buttonPanel.getComponents()).contains(transferButton)) {
@@ -2866,8 +2914,10 @@ public class ManagementSystem extends JFrame {
             ArrayList<Dish> updatedOrder = Ordering.getOrderingFromTable(table);
             if (updatedOrder == null || updatedOrder.isEmpty()) {
                 Floor_table_model.setValueAt("Sẵn sàng phục vụ", selectedRow, 2);
+                table.setOperatingStatus("Sẵn sàng phục vụ");
             } else {
                 Floor_table_model.setValueAt("Đang phục vụ", selectedRow, 2);
+                table.setOperatingStatus("Đang phục vụ");
             }
         });
         
@@ -3771,9 +3821,27 @@ public class ManagementSystem extends JFrame {
 					"Mã Hoá Đơn", "Trạng Thái Thanh Toán", "Thời Gian", "Tổng Tiền"
 				}
 			);
-		
-    	ReceiptTable = new JTable();
-    	ReceiptTable.setModel(Receipt_table_mode);
+    	
+    	ReceiptTable = new JTable(Receipt_table_mode) {
+    	    @Override
+    	    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+    	        Component c = super.prepareRenderer(renderer, row, column);
+
+    	        // Nếu không đang được chọn, tô màu nền xen kẽ
+    	        if (!isRowSelected(row)) {
+    	            if (row % 2 == 0) {
+    	                c.setBackground(Color.WHITE); // dòng chẵn
+    	            } else {
+    	                c.setBackground(new Color(240, 240, 240)); // dòng lẻ: xám nhạt
+    	            }
+    	        } else {
+    	            c.setBackground(getSelectionBackground()); // dòng đang chọn
+    	        }
+
+    	        return c;
+    	    }
+    	};
+
     	ReceiptTable.getTableHeader().setReorderingAllowed(false);
     	ReceiptTable.setFont(new Font("Arial", Font.PLAIN, 20));
     	ReceiptTable.getColumnModel().getColumn(0).setPreferredWidth(200);
@@ -4278,8 +4346,26 @@ public class ManagementSystem extends JFrame {
 				}
 			);
 		
-    	SalaryTable = new JTable();
-    	SalaryTable.setModel(Salary_table_model);
+    	SalaryTable = new JTable(Salary_table_model) {
+    	    @Override
+    	    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+    	        Component c = super.prepareRenderer(renderer, row, column);
+
+    	        // Nếu không đang được chọn, tô màu nền xen kẽ
+    	        if (!isRowSelected(row)) {
+    	            if (row % 2 == 0) {
+    	                c.setBackground(Color.WHITE); // dòng chẵn
+    	            } else {
+    	                c.setBackground(new Color(240, 240, 240)); // dòng lẻ: xám nhạt
+    	            }
+    	        } else {
+    	            c.setBackground(getSelectionBackground()); // dòng đang chọn
+    	        }
+
+    	        return c;
+    	    }
+    	};
+
     	SalaryTable.getTableHeader().setReorderingAllowed(false);
     	SalaryTable.setFont(new Font("Arial", Font.PLAIN, 20));
     	SalaryTable.getColumnModel().getColumn(0).setPreferredWidth(100);
@@ -4314,8 +4400,26 @@ public class ManagementSystem extends JFrame {
 				}
 			);
 		
-    	StaffTable = new JTable();
-    	StaffTable.setModel(Emp_table_model);
+    	StaffTable = new JTable(Emp_table_model) {
+    	    @Override
+    	    public Component prepareRenderer(TableCellRenderer renderer, int row, int column) {
+    	        Component c = super.prepareRenderer(renderer, row, column);
+
+    	        // Nếu không đang được chọn, tô màu nền xen kẽ
+    	        if (!isRowSelected(row)) {
+    	            if (row % 2 == 0) {
+    	                c.setBackground(Color.WHITE); // dòng chẵn
+    	            } else {
+    	                c.setBackground(new Color(240, 240, 240)); // dòng lẻ: xám nhạt
+    	            }
+    	        } else {
+    	            c.setBackground(getSelectionBackground()); // dòng đang chọn
+    	        }
+
+    	        return c;
+    	    }
+    	};
+
     	StaffTable.getTableHeader().setReorderingAllowed(false);
     	StaffTable.setFont(new Font("Arial", Font.PLAIN, 20));
     	StaffTable.getColumnModel().getColumn(0).setPreferredWidth(100);

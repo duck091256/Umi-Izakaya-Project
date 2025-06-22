@@ -50,7 +50,7 @@ public class DishItemController {
     	quantity = 1;
     	quantityLabel.setText(String.valueOf(quantity));
     }
-
+    
     @FXML private void addToCart() {
         if (controller != null && dish != null) {
             if (controller.getSelectedTable() == null) {

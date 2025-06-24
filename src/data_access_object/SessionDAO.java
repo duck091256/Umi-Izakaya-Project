@@ -1,6 +1,8 @@
 package data_access_object;
 
 import java.sql.*;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
 import database.JDBCUtil;
 import models.Session;
@@ -113,7 +115,7 @@ public class SessionDAO {
     }
     
     // Tìm session theo table ID
-    public Session getSessionByTableID(String tableID) {
+    public static Session getSessionByTableID(String tableID) {
         String sql = "SELECT * FROM sessions WHERE tableID = ?";
 
         try (Connection conn = JDBCUtil.getConnection();
@@ -153,5 +155,29 @@ public class SessionDAO {
             e.printStackTrace();
         }
         return sessionID;
+    }
+    
+    public static LocalDateTime getStartTimeByTable(String tableID) {
+        LocalDateTime result = null;
+        String query = "SELECT b.time FROM sessions s JOIN bill b ON s.billID = b.billID WHERE s.tableID = ?";
+
+        try (Connection conn = JDBCUtil.getConnection();
+             PreparedStatement stmt = conn.prepareStatement(query)) {
+
+            stmt.setString(1, tableID);
+            ResultSet rs = stmt.executeQuery();
+
+            if (rs.next()) {
+                String timeString = rs.getString("time");
+                // Định dạng chuẩn khớp với DB
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd HH:mm:ss");
+                result = LocalDateTime.parse(timeString, formatter);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        return result;
     }
 }

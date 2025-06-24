@@ -2,6 +2,7 @@ package data_access_object;
 
 import java.sql.*;
 import java.time.LocalTime;
+import java.time.YearMonth;
 import java.util.*;
 
 import javax.swing.JOptionPane;
@@ -59,7 +60,6 @@ public class StaffDAO {
 			e.printStackTrace();
 		}
 	}
-
 	/**
 	 * Thêm nhân viên vào HashMap và List hiện tại của chương trình
 	 * 
@@ -82,11 +82,12 @@ public class StaffDAO {
 	        // 1. Thêm nhân viên vào bảng STAFF
 	        addStaffToDatabase(staff, connection);
 
-	        // 2. Thêm bản ghi lương vào SALARY_RECORDS với lương mặc định 0.0
-	        String sql = "INSERT INTO SALARY_RECORDS (staffID, baseSalary) VALUES (?, ?)";
+	        // 2. Thêm bản ghi lương vào SALARY_RECORDS với lương mặc định 0.0 và tháng hiện tại
+	        String sql = "INSERT INTO SALARY_RECORDS (staffID, month, baseSalary) VALUES (?, ?, ?)";
 	        try (PreparedStatement ps = connection.prepareStatement(sql)) {
 	            ps.setString(1, staff.getStaffID());
-	            ps.setDouble(2, 0.0); // Lương mặc định, bạn có thể sửa thành staff.getBaseSalary() nếu có
+	            ps.setString(2, YearMonth.now().toString()); // Sử dụng tháng hiện tại (ví dụ: 2025-06)
+	            ps.setDouble(3, 0.0); // Lương mặc định
 	            ps.executeUpdate();
 	        }
 

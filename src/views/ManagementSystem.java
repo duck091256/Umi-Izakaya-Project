@@ -503,10 +503,9 @@ public class ManagementSystem extends JFrame {
 		loadReceiptsData();
 		loadSessionsData();
 
-		refreshChart();	
-    }
-    
-    public static void openChatWindow() {
+		refreshChart();
+		
+		// Tự động tính lương cho nhân viên
     	ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
 
     	scheduler.scheduleAtFixedRate(() -> {
@@ -514,9 +513,13 @@ public class ManagementSystem extends JFrame {
     	    if (today.getDayOfMonth() == 1) {
     	        System.out.println("Tự động tính lương cho tháng " + YearMonth.now().minusMonths(1));
     	        CalculateSalary.calculateAndSaveSalaryForAllStaff(YearMonth.now().minusMonths(1));
+    	    } else {
+    	    	System.out.println("Hôm ngay không phải đầu tháng, không cần tự động tính lương");
     	    }
     	}, 0, 1, TimeUnit.DAYS);
-
+    }
+    
+    public static void openChatWindow() {
         JFrame chatFrame = new JFrame("Tin nhắn");
         chatFrame.setSize(300, 400);
         chatFrame.getContentPane().setLayout(new BorderLayout());

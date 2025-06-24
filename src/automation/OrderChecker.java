@@ -7,7 +7,11 @@ import database.JDBCUtil;
 public class OrderChecker {
 
     // NOTE: thời gian quy định phiên trễ (có thể sửa sau)
-    private static final long MAX_SESSION_DURATION_HOURS = 2;
+    private static final long MAX_SESSION_DURATION_HOURS = 3;
+    
+    public static long getDuration() {
+    	return MAX_SESSION_DURATION_HOURS;
+    }
 
     public static void startMonitoring() {
         ScheduledExecutorService scheduler = Executors.newScheduledThreadPool(1);
@@ -33,12 +37,9 @@ public class OrderChecker {
                 long duration = System.currentTimeMillis() - orderTime.getTime();
                 long hours = duration / (1000 * 60 * 60);
 
-                if (hours >= MAX_SESSION_DURATION_HOURS && !OvertimeSessionManager.isOvertime(tableID)) {
+                if (hours >= MAX_SESSION_DURATION_HOURS) {
                     // Gửi thông báo tới client (VD: nhân viên)
-                    NotificationSender.sendNotification("192.168.88.134", "🕒 Bàn " + tableID + " đã order quá 2 tiếng!");
-
-                    // Ghi nhớ bàn này để đổi màu dòng (nếu có UI)
-                    OvertimeSessionManager.addOvertimeTable(tableID);
+                    NotificationSender.sendNotification("192.168.88.134", "🕒 Bàn " + tableID + " đã order quá " + MAX_SESSION_DURATION_HOURS + " tiếng!");
                 }
             }
         } catch (Exception e) {

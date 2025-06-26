@@ -32,7 +32,7 @@ import java.util.Timer;
 import java.text.SimpleDateFormat;
 
 public class EnhancedChatClient extends JFrame {
-	private String serverName = "localhost";
+	private String serverName = "172.20.10.4";
 	private int serverPort = 8888;
 	private Socket socket;
 	private DataInputStream inputStream;

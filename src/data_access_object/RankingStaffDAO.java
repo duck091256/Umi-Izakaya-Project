@@ -142,7 +142,7 @@ public class RankingStaffDAO {
     
     public static List<SimpleRanking> getSimpleRankingList() {
         List<SimpleRanking> list = new ArrayList<>();
-        String sql = "SELECT staffID, rating, ranking FROM RANKING_STAFF ORDER BY ranking ASC";
+        String sql = "SELECT staffID, rating, ranking FROM ranking_staff ORDER BY ranking ASC";
 
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql);

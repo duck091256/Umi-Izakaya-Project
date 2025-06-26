@@ -14,6 +14,9 @@ public class JDBCUtil {
 		String userName = "root";
 		String password = "";
 		
+//		String url = "jdbc:mysql://switchback.proxy.rlwy.net:37656/railway";
+//		String password = "hJruuTfhHpDuDfvxCfWpGzcswsChKbCq";
+//		
 		Connection con = null;
 		
 		try {

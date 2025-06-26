@@ -4508,7 +4508,7 @@ public class ManagementSystem extends JFrame {
         Salary_table_model.setRowCount(0); // clear bảng
 
         try (Connection conn = JDBCUtil.getConnection()) {
-            String sql = "SELECT staffID, month, baseSalary, bonus, total FROM SALARY_RECORDS ORDER BY month DESC, staffID ASC";
+            String sql = "SELECT staffID, month, baseSalary, bonus, total FROM salary_records ORDER BY month DESC, staffID ASC";
             PreparedStatement ps = conn.prepareStatement(sql);
             ResultSet rs = ps.executeQuery();
 

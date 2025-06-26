@@ -33,7 +33,7 @@ public class StaffDAO {
 		map = new HashMap<>();
 		list = new ArrayList<>();
 		
-		String sql = "SELECT * FROM STAFF";
+		String sql = "SELECT * FROM staff";
 		
 		try (Connection conn = JDBCUtil.getConnection(); 
 			 PreparedStatement stmt = conn.prepareStatement(sql)) {
@@ -83,7 +83,7 @@ public class StaffDAO {
 	        addStaffToDatabase(staff, connection);
 
 	        // 2. Thêm bản ghi lương vào SALARY_RECORDS với lương mặc định 0.0 và tháng hiện tại
-	        String sql = "INSERT INTO SALARY_RECORDS (staffID, month, baseSalary) VALUES (?, ?, ?)";
+	        String sql = "INSERT INTO salary_records (staffID, month, baseSalary) VALUES (?, ?, ?)";
 	        try (PreparedStatement ps = connection.prepareStatement(sql)) {
 	            ps.setString(1, staff.getStaffID());
 	            ps.setString(2, YearMonth.now().toString()); // Sử dụng tháng hiện tại (ví dụ: 2025-06)
@@ -191,7 +191,7 @@ public class StaffDAO {
 	}
 	
 	public static void addStaffToDatabase(Staff staff, Connection conn) {
-		String sql = "INSERT INTO STAFF VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO staff VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			stmt.setString(1, staff.getStaffID());
 			stmt.setString(2, staff.getUserName());
@@ -211,7 +211,7 @@ public class StaffDAO {
 	}
 
 	public static void deleteStaffToDatabase(Staff staff, Connection conn) {
-		String delete_sql = "DELETE FROM STAFF WHERE staffID = ?";
+		String delete_sql = "DELETE FROM staff WHERE staffID = ?";
 		
 		try (PreparedStatement stmt = conn.prepareStatement(delete_sql)) {
 			stmt.setString(1, staff.getStaffID());
@@ -246,7 +246,7 @@ public class StaffDAO {
 	 * @param conn - Connection đã được kết nối với database
 	 */
 	private static void clearTable(Connection conn) {
-		String delete_sql = "DELETE FROM STAFF";
+		String delete_sql = "DELETE FROM staff";
 		
 		try (PreparedStatement stmt = conn.prepareStatement(delete_sql)) {
 			stmt.executeUpdate();
@@ -263,7 +263,7 @@ public class StaffDAO {
 	 * @param conn - Connection đã được kết nối với database
 	 */
 	private static void insertData(Connection conn) {
-		String sql = "INSERT INTO STAFF VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+		String sql = "INSERT INTO staff VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
 		try (PreparedStatement stmt = conn.prepareStatement(sql)) {
 			for (Staff staff : list) {
 				stmt.setString(1, staff.getStaffID());
@@ -304,7 +304,7 @@ public class StaffDAO {
 	}
 	
 	public static void updateStaffToDatabase(Staff staff, Staff newStaff, Connection conn) {
-	    String sql = "UPDATE STAFF SET fullName = ?, sex = ?, phone = ?, position = ? WHERE staffID = ?";
+	    String sql = "UPDATE staff SET fullName = ?, sex = ?, phone = ?, position = ? WHERE staffID = ?";
 
 	    try (PreparedStatement ps = conn.prepareStatement(sql)) {
 	        ps.setString(1, newStaff.getFullName());
@@ -378,7 +378,7 @@ public class StaffDAO {
     
     public static double getBaseSalaryData(String staffID) {
         try (Connection conn = JDBCUtil.getConnection()) {
-            String sql = "SELECT baseSalary FROM SALARY_RECORDS WHERE staffID = ?";
+            String sql = "SELECT baseSalary FROM salary_records WHERE staffID = ?";
             PreparedStatement ps = conn.prepareStatement(sql);
             
             ps.setString(1, staffID);
@@ -396,7 +396,7 @@ public class StaffDAO {
     }
     
     public static boolean insertBaseSalaryData(String staffID, double baseSalary) {
-        String sql = "INSERT INTO SALARY_RECORDS (staffID, baseSalary) VALUES (?, ?)";
+        String sql = "INSERT INTO salary_records (staffID, baseSalary) VALUES (?, ?)";
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
             
@@ -413,7 +413,7 @@ public class StaffDAO {
     }
 
     public static boolean updateBaseSalaryData(String staffID, double newSalary) {
-        String sql = "UPDATE SALARY_RECORDS SET baseSalary = ? WHERE staffID = ?";
+        String sql = "UPDATE salary_records SET baseSalary = ? WHERE staffID = ?";
 
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {
@@ -430,7 +430,7 @@ public class StaffDAO {
     }
     
     public static boolean updateTotalSalaryData(String staffID, double total) {
-        String sql = "UPDATE SALARY_RECORDS SET total = ? WHERE staffID = ?";
+        String sql = "UPDATE salary_records SET total = ? WHERE staffID = ?";
 
         try (Connection conn = JDBCUtil.getConnection();
              PreparedStatement ps = conn.prepareStatement(sql)) {

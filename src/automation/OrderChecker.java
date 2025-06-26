@@ -5,6 +5,8 @@ import java.util.concurrent.*;
 import database.JDBCUtil;
 
 public class OrderChecker {
+	private static String ipQuoatQuoat="172.20.10.4";
+	private static String ipNHON="192.168.88.134";
 
     // NOTE: thời gian quy định phiên trễ (có thể sửa sau)
     private static final long MAX_SESSION_DURATION_HOURS = 3;
@@ -39,7 +41,7 @@ public class OrderChecker {
 
                 if (hours >= MAX_SESSION_DURATION_HOURS) {
                     // Gửi thông báo tới client (VD: nhân viên)
-                    NotificationSender.sendNotification("192.168.88.134", "🕒 Bàn " + tableID + " đã order quá " + MAX_SESSION_DURATION_HOURS + " tiếng!");
+                    NotificationSender.sendNotification(ipQuoatQuoat, "🕒 Bàn " + tableID + " đã order quá " + MAX_SESSION_DURATION_HOURS + " tiếng!");
                 }
             }
         } catch (Exception e) {
